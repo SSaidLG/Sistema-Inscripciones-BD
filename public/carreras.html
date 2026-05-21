@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Carreras</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { 'azul-uni': '#002B5C', 'oro-uni': '#D59F0F' } } } }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+
+    <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="p-6 bg-azul-uni flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white">Directorio de Carreras</h1>
+            <a href="index.html" class="text-white hover:text-oro-uni font-semibold">← Volver al Inicio</a>
+        </div>
+        
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <input type="text" id="buscador" onkeyup="filtrarTabla()" placeholder="Buscar por nombre..." class="border border-gray-300 rounded-lg px-4 py-2 w-1/3 focus:ring-2 focus:ring-azul-uni focus:outline-none">
+                <button class="bg-oro-uni text-white px-4 py-2 rounded-lg font-bold hover:bg-yellow-600 transition" onclick="abrirModal()">
+                    + Nueva Carrera
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-200 text-azul-uni uppercase text-sm">
+                            <th class="p-3">ID</th>
+                            <th class="p-3">Nombre</th>
+                            <th class="p-3">Área</th>
+                            <th class="p-3">Modalidad</th>
+                            <th class="p-3">Duración</th>
+                            <th class="p-3">Créditos</th>
+                            <th class="p-3 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-carreras" class="text-gray-700">
+                        <tr><td colspan="5" class="text-center p-4">Cargando datos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalCarrera" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+        <div class="bg-white rounded-xl shadow-lg w-1/3 p-6">
+            <h2 id="modalTitulo" class="text-xl font-bold text-azul-uni mb-4">Nueva Carrera</h2>
+            <form id="formCarrera" class="space-y-4">
+                <input type="hidden" id="modoEdicion" value="false">
+                <input type="hidden" id="id">
+
+                <div>
+                    <label class="block text-sm font-semibold">Nombre Carrera</label>
+                    <input type="text" id="nombre" class="w-full border rounded p-2" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold">Área</label>
+                        <input type="number" id="area" class="w-full border rounded p-2">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold">Modalidad</label>
+                        <input type="text" id="modalidad" class="w-full border rounded p-2">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold">Duración</label>
+                        <input type="number" id="duracion" class="w-full border rounded p-2">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold">Créditos Obligatorios</label>
+                        <input type="number" id="credObl" class="w-full border rounded p-2">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold">Créditos Optativos</label>
+                        <input type="number" id="credOpt" class="w-full border rounded p-2">
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="cerrarModal()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-azul-uni text-white rounded hover:bg-blue-900">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('modalCarrera');
+        const form = document.getElementById('formCarrera');
+
+        // 1. READ
+        async function cargarCarreras() {
+            try {
+                const res = await fetch('/api/carreras');
+                const carreras = await res.json();
+                const tbody = document.getElementById('tabla-carreras');
+
+                tbody.innerHTML = '';
+
+                carreras.forEach(c => {
+                    tbody.innerHTML += `
+                        <tr class="border-b hover:bg-gray-50 carrera-row">
+                            <td class="p-3">${c.id_carrera}</td>
+                            <td class="p-3">
+                                ${c.nombre_carrera}
+                            </td>
+
+                            <td class="p-3">
+                                ${c.area}
+                            </td>
+
+                            <td class="p-3">
+                                ${c.modalidad}
+                            </td>
+
+                            <td class="p-3">
+                                ${c.duracion} semestres
+                            </td>
+
+                            <td class="p-3">
+                                ${c.creditos_obligatorios} / ${c.creditos_optativos}
+                            </td>
+
+                            <td class="p-3 text-center">
+                                <button
+                                    onclick="editarCarrera(${c.id_carrera})"
+                                    class="text-blue-500 hover:text-blue-700 mr-2">
+
+                                    <i class="fa-solid fa-pen"></i>
+                                    Editar
+                                </button>
+
+                                <button
+                                    onclick="borrarCarrera(${c.id_carrera})"
+                                    class="text-red-500 hover:text-red-700">
+
+                                    <i class="fa-solid fa-trash"></i>
+                                    Borrar
+                                </button>
+                            </td>
+
+                        </tr>
+                    `;
+                });
+
+            } catch (error) {
+
+                console.error(error);
+
+                document.getElementById('tabla-carreras').innerHTML =
+                '<tr><td colspan="7" class="text-center text-red-500 p-4">Error al cargar carreras</td></tr>';
+            }
+        }
+
+
+
+        // 2. CREATE / UPDATE
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('id').value;
+            const datos = {
+                area: document.getElementById('area').value,
+                nombre_carrera: document.getElementById('nombre').value,
+                modalidad: document.getElementById('modalidad').value,
+                duracion: document.getElementById('duracion').value,
+                creditos_obligatorios: document.getElementById('credObl').value,
+                creditos_optativos: document.getElementById('credOpt').value
+            };
+
+            const modoEdicion = document.getElementById('modoEdicion').value === "true";
+            const url = modoEdicion
+                ? `/api/carreras/${id}`
+                : '/api/carreras';
+
+            const metodo = modoEdicion
+                ? 'PUT'
+                : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method: metodo,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datos)
+                });
+
+                if(res.ok) {
+                    cerrarModal();
+                    cargarCarreras();
+                } else {
+                    const error = await res.json();
+                    alert(error.mensaje);
+                }
+            } catch (error) {
+                alert('Error al guardar');
+            }
+        });
+
+        // 3. PREPARAR EDICIÓN
+        async function editarCarrera(id) {
+
+            const res = await fetch(`/api/carreras/${id}`);
+            const c = await res.json();
+
+            document.getElementById('id').value = c.id_carrera;
+            document.getElementById('nombre').value = c.nombre_carrera;
+            document.getElementById('area').value = c.area;
+            document.getElementById('modalidad').value = c.modalidad;
+            document.getElementById('duracion').value = c.duracion;
+            document.getElementById('credObl').value = c.creditos_obligatorios;
+            document.getElementById('credOpt').value = c.creditos_optativos;
+            document.getElementById('modoEdicion').value = "true";
+            document.getElementById('modalTitulo').innerText = "Editar Carrera";
+
+            modal.classList.remove('hidden');
+        }
+
+        // 4. DELETE
+        async function borrarCarrera(id) {
+            if(confirm('¿Eliminar carrera?')) {
+                const res = await fetch(`/api/carreras/${id}`,
+                    { method: 'DELETE' }
+                );
+                if(res.ok) {
+                    cargarCarreras();
+                } else {
+                    const error = await res.json();
+                    alert(error.mensaje);
+                }
+            }
+        }
+
+        // CONTROLADORES DE INTERFAZ
+        function abrirModal() {
+            form.reset();
+            document.getElementById('id').readOnly = false;
+            document.getElementById('modoEdicion').value = "false";
+            document.getElementById('modalTitulo').innerText = "Nuevo Carrera";
+            modal.classList.remove('hidden');
+        }
+
+        function cerrarModal() {
+            modal.classList.add('hidden');
+        }
+
+        function filtrarTabla() {
+            const query = document.getElementById('buscador').value.toLowerCase();
+            const filas = document.querySelectorAll('.carrera-row');
+            filas.forEach(fila => {
+                const mat = fila.querySelector('.mat-cell').innerText.toLowerCase();
+                fila.style.display = mat.includes(query) ? '' : 'none';
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', cargarCarreras);
+    </script>
+</body>
+</html>

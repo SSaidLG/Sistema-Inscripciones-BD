@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Inscripciones FBD</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'azul-uni': '#002B5C', // Azul marino institucional
+                        'oro-uni': '#D59F0F',  // Acento dorado/oro
+                        'fondo-claro': '#F3F4F6'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-fondo-claro text-gray-800 font-sans min-h-screen flex flex-col">
+
+    <nav class="bg-azul-uni text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-graduation-cap text-oro-uni text-2xl"></i>
+                    <span class="font-bold text-xl tracking-wider">Gestión Académica ICO</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="relative">
+                        <input type="text" class="bg-white/10 text-white placeholder-gray-300 rounded-full pl-10 pr-4 py-1 focus:outline-none focus:ring-2 focus:ring-oro-uni" placeholder="Buscar alumno o profesor...">
+                        <i class="fa-solid fa-search absolute left-3 top-2 text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <header class="mb-8 border-b-2 border-oro-uni pb-4 inline-block">
+            <h1 class="text-3xl font-bold text-azul-uni">Panel de Control</h1>
+            <p class="text-gray-500 mt-1">Selecciona un módulo para gestionar la información.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <a href="inscripcion.html" class="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border-t-4 border-oro-uni group relative">
+                <div class="p-6">
+                    <div class="text-oro-uni bg-orange-50 rounded-full w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-user-plus text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-azul-uni mb-2">Inscripción Alumnos</h2>
+                    <p class="text-gray-600 text-sm">Asignación de asignaturas y grupos para Ingeniería en Computación.</p>
+                </div>
+            </a>
+
+            <a href="../targets/catalogos.html" class="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border-t-4 border-azul-uni group">
+                <div class="p-6">
+                    <div class="text-azul-uni bg-blue-50 rounded-full w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-database text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-azul-uni mb-2">Mantenimiento CRUD</h2>
+                    <p class="text-gray-600 text-sm">Gestión de Carreras, Materias, Profesores, Grupos y Horarios.</p>
+                </div>
+            </a>
+
+            <a href="comprobantes.html" class="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border-t-4 border-gray-400 group">
+                <div class="p-6">
+                    <div class="text-gray-600 bg-gray-100 rounded-full w-12 h-12 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-file-pdf text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-azul-uni mb-2">Comprobantes</h2>
+                    <p class="text-gray-600 text-sm">Generación de tira de materias en PDF para alumnos inscritos.</p>
+                </div>
+            </a>
+
+        </div>
+    </main>
+
+    <footer class="bg-azul-uni text-center text-white py-4 text-sm mt-auto">
+        <p>Proyecto Final - Bases de Datos FBD &copy; 2026</p>
+    </footer>
+
+</body>
+</html>
