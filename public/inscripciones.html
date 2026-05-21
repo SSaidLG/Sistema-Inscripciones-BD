@@ -46,7 +46,7 @@
                     </p>
                 </div>
 
-                <a href="./catalogos/catalogos.html"
+                <a href="./login/accesoAdmin.html"
                 class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition">
 
                     <i class="fa-solid fa-house mr-2"></i>
@@ -223,6 +223,18 @@
                     </table>
 
                 </div>
+                    <div class="flex justify-end mt-4">
+
+                        <button
+                            id="btnConfirmar"
+                            onclick="procesarInscripcion()"
+                            class="hidden bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold shadow-md">
+
+                            Confirmar Inscripción
+
+                        </button>
+
+                    </div>
 
             </div>
 
@@ -260,6 +272,8 @@ async function buscarAlumno(){
         }
 
         const alumno = await res.json();
+
+        alumnoActual = alumno;
 
         document.getElementById('cardAlumno')
         .classList.remove('hidden');
@@ -400,31 +414,56 @@ async function cargarHorarios(){
 // AGREGAR MATERIA
 // =========================================
 
-function agregarMateria(horario){
+function agregarMateria(horario) {
 
-    if(materiasSeleccionadas.length >= 7){
-
-        alert('Máximo 7 materias');
-
+    if (materiasSeleccionadas.length >= 7) {
+        alert("Límite alcanzado: Máximo 7 materias permitidas.");
         return;
     }
 
-    const existe =
-    materiasSeleccionadas.some(
-        m => m.id_horario === horario.id_horario
-    );
+    if (horario.cupos_disponibles <= 0) {
+        alert("Cupo agotado para este grupo.");
+        return;
+    }
 
-    if(existe){
+    const materiaYaInscrita =
+        materiasSeleccionadas.some(
+            m => m.id_materia === horario.id_materia
+        );
 
-        alert('Materia ya agregada');
+    if (materiaYaInscrita) {
+        alert(`Ya tienes la materia "${horario.nombre_materia}" seleccionada.`);
+        return;
+    }
 
+    if (hayChoqueHorario(horario)) {
+        alert("¡Choque de horario detectado!");
         return;
     }
 
     materiasSeleccionadas.push(horario);
 
     renderSeleccionadas();
-
+}
+// Función auxiliar para detectar choques
+function hayChoqueHorario(nuevoHorario) {
+    const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+    
+    for (const inscrito of materiasSeleccionadas) {
+        for (const dia of dias) {
+            if (nuevoHorario[dia] && inscrito[dia]) {
+                // Parsear horas (ej. "07:00-09:00")
+                const [nuevoInicio, nuevoFin] = nuevoHorario[dia].split('-');
+                const [inscritoInicio, inscritoFin] = inscrito[dia].split('-');
+                
+                // Lógica de traslape de rangos
+                if (nuevoInicio < inscritoFin && nuevoFin > inscritoInicio) {
+                    return true; // Hay choque
+                }
+            }
+        }
+    }
+    return false;
 }
 
 // =========================================
@@ -453,6 +492,18 @@ function renderSeleccionadas(){
         .filter(Boolean)
         .join(' | ');
 
+        const btn =
+            document.getElementById('btnConfirmar');
+
+        if(materiasSeleccionadas.length > 0){
+
+            btn.classList.remove('hidden');
+
+        }else{
+
+            btn.classList.add('hidden');
+
+        }
         tbody.innerHTML += `
 
             <tr class="border-b">
@@ -507,6 +558,51 @@ function eliminarMateria(id){
     renderSeleccionadas();
 
 }
+
+async function procesarInscripcion() {
+    if(materiasSeleccionadas.length === 0) {
+        alert("Debes seleccionar al menos una materia.");
+        return;
+    }
+
+    const confirmacion = confirm(`¿Estás seguro de inscribir estas ${materiasSeleccionadas.length} asignaturas?`);
+    if(!confirmacion) return;
+
+    // Extraer solo los IDs para el backend
+    const idsHorarios = materiasSeleccionadas.map(m => m.id_horario);
+    const btn = document.getElementById('btnConfirmar');
+    btn.disabled = true;
+    btn.innerText = "Procesando...";
+
+    try {
+        const respuesta = await fetch('/api/inscripciones/confirmar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                matricula: alumnoActual.matricula, // Asegúrate de tener guardado el alumno en esta variable global cuando lo buscas
+                horarios: idsHorarios
+            })
+        });
+
+        const data = await respuesta.json();
+
+        if (respuesta.ok) {
+            alert("¡Inscripción exitosa!");
+            // Aquí recargaremos la página o pasaremos a la generación del comprobante (siguiente fase)
+            window.location.reload(); 
+        } else {
+            alert("Error: " + data.mensaje);
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Error de conexión al servidor.");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Confirmar Inscripción";
+    }
+}
+
+
 
 window.addEventListener(
     'DOMContentLoaded',
