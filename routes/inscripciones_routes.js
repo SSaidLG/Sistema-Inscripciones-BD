@@ -5,6 +5,7 @@ const inscripcionesController = require('../controllers/inscripciones_controller
 router.get('/alumno/:matricula', inscripcionesController.obtenerAlumno);
 router.get('/horarios', inscripcionesController.obtenerHorarios);
 router.post('/confirmar', inscripcionesController.confirmarInscripcion);
+router.get('/comprobante/:matricula', inscripcionesController.obtenerComprobante);
 //router.get('/horario-alumno/:matricula', inscripcionesController.obtenerHorarioAlumno);
 //router.post('/', inscripcionesController.crearInscripcion);
 //router.delete('/:id', inscripcionesController.eliminarInscripcion);

@@ -20,6 +20,8 @@
             }
         }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -235,9 +237,12 @@
                         </button>
 
                     </div>
-
+                    <div class="mt-auto flex justify-end border-t pt-4">
+                        <button id="btnComprobante" onclick="generarComprobantePDF()" class="bg-gray-600 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded shadow mt-4 transition duration-300">
+                            <i class="fa-solid fa-file-pdf mr-2"></i> Generar Comprobante PDF
+                        </button>
+                    </div>
             </div>
-
         </div>
 
     </div>
@@ -246,6 +251,7 @@
 <script>
 
 let materiasSeleccionadas = [];
+let alumnoActual = null;
 
 // =========================================
 // BUSCAR ALUMNO
@@ -253,8 +259,7 @@ let materiasSeleccionadas = [];
 
 async function buscarAlumno(){
 
-    const matricula =
-    document.getElementById('matricula').value;
+    const matricula = document.getElementById('matricula').value;
 
     if(!matricula){
         alert('Ingresa una matrícula');
@@ -271,29 +276,28 @@ async function buscarAlumno(){
             throw new Error('Alumno no encontrado');
         }
 
-        const alumno = await res.json();
-
-        alumnoActual = alumno;
+        // 2. CORREGIDO: Usamos 'res.json()' en lugar de 'respuesta.json()'
+        alumnoActual = await res.json();
 
         document.getElementById('cardAlumno')
         .classList.remove('hidden');
 
         document.getElementById('infoMatricula')
-        .innerText = alumno.matricula;
+        .innerText = alumnoActual.matricula;
 
         document.getElementById('infoNombre')
         .innerText =
-            `${alumno.nombre_alumno}
-            ${alumno.ap_paterno}
-            ${alumno.ap_materno}`;
+            `${alumnoActual.nombre_alumno}
+            ${alumnoActual.ap_paterno}
+            ${alumnoActual.ap_materno}`;
 
         document.getElementById('infoCarrera')
-        .innerText = alumno.nombre_carrera;
+        .innerText = alumnoActual.nombre_carrera;
 
         document.getElementById('infoPromedio')
-        .innerText = Number(alumno.promedio).toFixed(1);
+        .innerText = Number(alumnoActual.promedio).toFixed(1);
 
-        const activo = alumno.estado == 1;
+        const activo = alumnoActual.estado == 1;
         document.getElementById('infoEstado').innerHTML = `
             <span class="${activo
                 ? 'text-green-600 font-semibold'
@@ -587,9 +591,16 @@ async function procesarInscripcion() {
         const data = await respuesta.json();
 
         if (respuesta.ok) {
-            alert("¡Inscripción exitosa!");
-            // Aquí recargaremos la página o pasaremos a la generación del comprobante (siguiente fase)
-            window.location.reload(); 
+            alert("¡Inscripción exitosa! Ya puedes generar el comprobante.");
+            // 1. Limpiamos la lista temporal
+            materiasSeleccionadas = [];
+            renderSeleccionadas();
+            
+            // 2. Mostramos el botón de generar PDF
+            document.getElementById('btnComprobante').classList.remove('hidden');
+            
+            // 3. Volvemos a buscar los horarios para que los cupos se actualicen visualmente
+            buscarHorarios();
         } else {
             alert("Error: " + data.mensaje);
         }
@@ -602,6 +613,143 @@ async function procesarInscripcion() {
     }
 }
 
+async function generarComprobantePDF() {
+    if (!alumnoActual) {
+        alert("Primero debes buscar un alumno.");
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/inscripciones/comprobante/${alumnoActual.matricula}`);
+        const materias = await res.json();
+
+        if (materias.length === 0) {
+            alert("Este alumno no tiene materias inscritas.");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Paleta de colores institucionales
+        const azulUNAM = [0, 43, 92];
+        const oroUNAM = [213, 159, 15];
+
+        // --- 1. ENCABEZADO AZUL ---
+        doc.setFillColor(...azulUNAM);
+        doc.rect(0, 0, 210, 35, 'F'); // Bloque azul superior
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(15);
+        doc.text("UNIVERSIDAD NACIONAL AUTÓNOMA DE MÉXICO", 105, 14, { align: 'center' });
+        
+        doc.setFontSize(12);
+        doc.text("Facultad de Estudios Superiores Aragón", 105, 21, { align: 'center' });
+        
+        doc.setFont("helvetica", "normal");
+        doc.text("Comprobante Oficial de Inscripción", 105, 28, { align: 'center' });
+
+        // --- 2. INSERCIÓN DE LOGOS ---
+        // Tomamos las imágenes ocultas del HTML
+        const imgUnam = document.getElementById('logoUnam');
+        const imgFes = document.getElementById('logoFes');
+        
+        // Verificamos que las imágenes hayan cargado bien en el navegador antes de pintarlas
+        if (imgUnam.complete && imgUnam.naturalWidth > 0) {
+            doc.addImage(imgUnam, 'PNG', 12, 3, 24, 28);
+        }
+        if (imgFes.complete && imgFes.naturalWidth > 0) {
+            doc.addImage(imgFes, 'PNG', 174, 3, 24, 28);
+        }
+
+        // --- 3. CAJA DE DATOS DEL ALUMNO ---
+        doc.setTextColor(0, 0, 0); 
+        doc.setDrawColor(...oroUNAM);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(12, 42, 186, 25, 2, 2, 'S'); // Caja con borde dorado
+
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Matrícula:`, 16, 49);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${alumnoActual.matricula}`, 42, 49);
+
+        doc.setFont("helvetica", "bold");
+        doc.text(`Nombre:`, 16, 56);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${alumnoActual.nombre_alumno} ${alumnoActual.ap_paterno} ${alumnoActual.ap_materno}`, 42, 56);
+
+        doc.setFont("helvetica", "bold");
+        doc.text(`Carrera:`, 16, 63);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${alumnoActual.nombre_carrera}`, 42, 63);
+
+        const periodo = materias[0].periodo_escolar;
+        const fechaInscripcion = materias[0].fecha;
+
+        doc.setFont("helvetica", "bold");
+        doc.text(`Promedio:`, 125, 49);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${Number(alumnoActual.promedio).toFixed(1)}`, 148, 49);
+
+        doc.setFont("helvetica", "bold");
+        doc.text(`Periodo:`, 125, 56);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${periodo}`, 148, 56);
+
+        doc.setFont("helvetica", "bold");
+        doc.text(`Fecha:`, 125, 63);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${fechaInscripcion}`, 148, 63);
+
+        // --- 4. TABLA DE ASIGNATURAS ---
+        let totalCreditos = 0;
+        const filasTabla = materias.map((m, i) => {
+            totalCreditos += m.creditos;
+            return [i + 1, m.nombre_materia, m.grupo, m.profesor, m.creditos];
+        });
+
+        doc.autoTable({
+            startY: 75,
+            head: [['#', 'Asignatura', 'Grupo', 'Profesor', 'Créditos']],
+            body: filasTabla,
+            theme: 'grid',
+            headStyles: { fillColor: azulUNAM, textColor: 255, halign: 'center' },
+            columnStyles: {
+                0: { halign: 'center', cellWidth: 10 },
+                2: { halign: 'center', cellWidth: 20 },
+                4: { halign: 'center', cellWidth: 22 } 
+            },
+            styles: { fontSize: 9, cellPadding: 3 },
+            alternateRowStyles: { fillColor: [240, 245, 250] }, 
+            margin: { left: 12, right: 12 }
+        });
+
+        // --- 5. BLOQUE DE CRÉDITOS Y FIRMA ---
+        const finalY = doc.lastAutoTable.finalY + 8;
+        
+        // Cuadro dorado para el total de créditos
+        doc.setFillColor(...oroUNAM);
+        doc.rect(138, finalY, 60, 8, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Total de Créditos: ${totalCreditos}`, 168, finalY + 5.5, { align: 'center' });
+
+        // Línea de firma
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(9);
+        doc.text("_______________________________________", 105, finalY + 40, { align: 'center' });
+        doc.text("Firma del Alumno", 105, finalY + 45, { align: 'center' });
+
+        // --- 6. GUARDAR PDF ---
+        doc.save(`Comprobante_Inscripcion_${alumnoActual.matricula}.pdf`);
+
+    } catch (error) {
+        console.error(error);
+        alert("Ocurrió un error al generar el comprobante.");
+    }
+}
 
 
 window.addEventListener(
@@ -611,5 +759,7 @@ window.addEventListener(
 
 </script>
 
+<img id="logoUnam" src="img/unam.png" class="hidden" alt="UNAM">
+    <img id="logoFes" src="img/fes.png" class="hidden" alt="FES">
 </body>
 </html>

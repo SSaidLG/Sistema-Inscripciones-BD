@@ -143,3 +143,30 @@ exports.confirmarInscripcion = async (req, res) => {
         conexion.release();
     }
 };
+
+// GET: Obtener materias inscritas para el comprobante
+exports.obtenerComprobante = async (req, res) => {
+    try {
+        const { matricula } = req.params;
+        const [inscripciones] = await db.query(
+            `SELECT 
+                m.nombre_materia, 
+                m.creditos, 
+                g.grupo, 
+                CONCAT(p.nombre_profesor, ' ', p.ap_paterno_profesor) AS profesor,
+                h.periodo_escolar,
+                DATE_FORMAT(i.fecha_inscripcion, '%Y-%m-%d %H:%i') AS fecha
+            FROM Inscripcion i
+            JOIN Horario h ON i.id_horario = h.id_horario
+            JOIN Materia m ON h.cve_materia = m.id_materia
+            JOIN Grupo g ON h.id_grupo = g.id_grupo
+            JOIN Profesor p ON h.id_profesor = p.id_profesor
+            WHERE i.matricula = ?`,
+            [matricula]
+        );
+        
+        res.status(200).json(inscripciones);
+    } catch (error) {
+        res.status(500).json({ mensaje: error.message });
+    }
+};
