@@ -84,8 +84,9 @@ exports.crearHorario = async (req, res) => {
             jueves,
             viernes,
             sabado,
-
-            salon
+            salon,
+            cupo_maximo,
+            cupos_disponibles
 
         } = req.body;
 
@@ -98,15 +99,15 @@ exports.crearHorario = async (req, res) => {
                 materia,
                 id_profesor,
                 id_grupo,
-
                 lunes,
                 martes,
                 miercoles,
                 jueves,
                 viernes,
                 sabado,
-
-                salon
+                salon,
+                cupo_maximo,
+                cupos_disponibles
 
             )
 
@@ -118,15 +119,15 @@ exports.crearHorario = async (req, res) => {
                 materia,
                 id_profesor,
                 id_grupo,
-
                 lunes,
                 martes,
                 miercoles,
                 jueves,
                 viernes,
                 sabado,
-
-                salon
+                salon,
+                cupo_maximo,
+                cupos_disponibles
             ]
         );
 
@@ -162,7 +163,9 @@ exports.actualizarHorario = async (req, res) => {
             viernes,
             sabado,
 
-            salon
+            salon,
+            cupo_maximo,
+            cupos_disponibles
 
         } = req.body;
 
@@ -185,7 +188,9 @@ exports.actualizarHorario = async (req, res) => {
                 viernes = ?,
                 sabado = ?,
 
-                salon = ?
+                salon = ?,
+                cupo_maximo = ?,
+                cupos_disponibles = ?
 
             WHERE id_horario = ?`,
             [
@@ -204,6 +209,8 @@ exports.actualizarHorario = async (req, res) => {
                 sabado,
 
                 salon,
+                cupo_maximo,
+                cupos_disponibles,
 
                 req.params.id
             ]

@@ -10,12 +10,58 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 min-h-screen p-8">
+
+<body class="bg-fondo-claro text-gray-800 font-sans min-h-screen flex flex-col"></body>
+
+<nav class="bg-azul-uni text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+
+            <!-- Logo + Título -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2 rounded-lg">
+                    <i class="fa-solid fa-graduation-cap text-oro-uni text-2xl"></i>
+                </div>
+
+                <div>
+                    <h1 class="font-bold text-xl tracking-wide">
+                        Gestión Académica ICO
+                    </h1>
+                    <p class="text-xs text-gray-300">
+                        Sistema de administración escolar
+                    </p>
+                </div>
+            </div>
+
+            <!-- Botón Inicio -->
+            <a href="../login/accesoAdmin.html"
+               class="flex items-center gap-2 bg-white/10 hover:bg-white/20 transition px-4 py-2 rounded-lg font-semibold">
+                
+                <i class="fa-solid fa-house"></i>
+                <span>Inicio</span>
+            </a>
+
+        </div>
+    </div>
+</nav>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
 
     <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
         <div class="p-6 bg-azul-uni flex justify-between items-center">
             <h1 class="text-2xl font-bold text-white">Directorio de Horarios</h1>
-            <a href="index.html" class="text-white hover:text-oro-uni font-semibold">← Volver al Inicio</a>
+            
+                        <!-- Botón regresar -->
+            <div class="mt-4 md:mt-0">
+                <button 
+                    onclick="history.back()"
+                    class="flex items-center gap-2 bg-azul-uni hover:bg-blue-900 text-white px-5 py-3 rounded-xl shadow-md transition-all duration-300 hover:scale-105"
+                >
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Regresar</span>
+                </button>
+            </div>
         </div>
         
         <div class="p-6">
@@ -37,11 +83,17 @@
                             <th class="p-3">Semestre</th>
                             <th class="p-3">Salón</th>
                             <th class="p-3">Horario</th>
+                            <th class="p-3">Cupos</th>
+
                             <th class="p-3 text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-horarios" class="text-gray-700">
-                        <tr><td colspan="5" class="text-center p-4">Cargando datos...</td></tr>
+                        <tr>
+                            <td colspan="9" class="text-center p-4">
+                                Cargando datos...
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -92,6 +144,24 @@
                     <label>Salón</label>
                     <input type="text" id="salon" class="w-full border rounded p-2">
                 </div>
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label>Cupo Máximo</label>
+                        <input
+                            type="number"
+                            id="cupo_maximo"
+                            class="w-full border rounded p-2"
+                            value="40">
+                    </div>
+                    <div>
+                        <label>Cupos Disponibles</label>
+                        <input
+                            type="number"
+                            id="cupos_disponibles"
+                            class="w-full border rounded p-2"
+                            value="40">
+                    </div>
+                </div>
 
                 <div class="flex justify-end space-x-3 mt-6">
                     <button type="button" onclick="cerrarModal()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
@@ -116,18 +186,37 @@
 
                 horarios.forEach(h => {
 
-                    const horarioTexto = [
+                    const horarioTexto = `
 
-                        h.lunes,
-                        h.martes,
-                        h.miercoles,
-                        h.jueves,
-                        h.viernes,
-                        h.sabado
+                    <div class="flex flex-col gap-1 text-xs">
 
-                    ]
-                    .filter(Boolean)
-                    .join(' | ');
+                        ${h.lunes
+                            ? `<span><strong>Lun:</strong> ${h.lunes}</span>`
+                            : ''}
+
+                        ${h.martes
+                            ? `<span><strong>Mar:</strong> ${h.martes}</span>`
+                            : ''}
+
+                        ${h.miercoles
+                            ? `<span><strong>Mié:</strong> ${h.miercoles}</span>`
+                            : ''}
+
+                        ${h.jueves
+                            ? `<span><strong>Jue:</strong> ${h.jueves}</span>`
+                            : ''}
+
+                        ${h.viernes
+                            ? `<span><strong>Vie:</strong> ${h.viernes}</span>`
+                            : ''}
+
+                        ${h.sabado
+                            ? `<span><strong>Sáb:</strong> ${h.sabado}</span>`
+                            : ''}
+
+                    </div>
+
+                    `;
 
                     tbody.innerHTML += `
                         <tr class="border-b">
@@ -153,17 +242,23 @@
                             <td class="p-3 text-sm">
                                 ${horarioTexto}
                             </td>
+                            <td class="p-3 whitespace-nowrap">
+                                ${h.cupos_disponibles || 0} /
+                                ${h.cupo_maximo || 0}
+                            </td>
                             <td class="p-3 text-center">
 
                                 <button
                                     onclick="editarHorario(${h.id_horario})"
-                                    class="text-blue-500 mr-2">
+                                    class="text-blue-500 hover:text-blue-700 mr-2">
+                                    <i class="fa-solid fa-pen"></i> 
                                     Editar
                                 </button>
 
                                 <button
                                     onclick="borrarHorario(${h.id_horario})"
-                                    class="text-red-500">
+                                    class="text-red-500 hover:text-red-700">
+                                    <i class="fa-solid fa-trash"></i> 
                                     Borrar
                                 </button>
                             </td>
@@ -193,7 +288,9 @@
                 jueves: document.getElementById('jueves').value,
                 viernes: document.getElementById('viernes').value,
                 sabado: document.getElementById('sabado').value,
-                salon: document.getElementById('salon').value
+                salon: document.getElementById('salon').value,
+                cupo_maximo: document.getElementById('cupo_maximo').value,
+                cupos_disponibles: document.getElementById('cupos_disponibles').value
 
             };
 
@@ -242,6 +339,8 @@
                 document.getElementById('viernes').value = h.viernes || '';
                 document.getElementById('sabado').value = h.sabado || '';
                 document.getElementById('salon').value = h.salon || '';
+                document.getElementById('cupo_maximo').value = h.cupo_maximo || 40;
+                document.getElementById('cupos_disponibles').value = h.cupos_disponibles || 40;
 
                 document.getElementById('modoEdicion').value = "true";
                 document.getElementById('modalTitulo').innerText = "Editar Horario";
@@ -254,7 +353,7 @@
         }
 
         // 4. DELETE
-        async function borrarProfesor(id) {
+        async function borrarHorario(id) {
             if(confirm('¿Estás seguro de eliminar este registro?')) {
                 const res = await fetch(`/api/horarios/${id}`, { method: 'DELETE' });
                 if(res.ok) cargarHorarios();
@@ -289,5 +388,7 @@
 
         window.addEventListener('DOMContentLoaded', cargarHorarios);
     </script>
+
+    </main>
 </body>
 </html>
