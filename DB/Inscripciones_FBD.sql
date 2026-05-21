@@ -91,9 +91,24 @@ CREATE TABLE Horario (
 
 CREATE TABLE Inscripcion (
     id_inscripcion INT AUTO_INCREMENT PRIMARY KEY,
-    fecha_inscripcion DATE DEFAULT (CURRENT_DATE),
-    matricula INT(9),
-    id_grupo INT,
+    fecha_inscripcion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    matricula INT(9) NOT NULL,
+    id_horario INT NOT NULL,
     FOREIGN KEY (matricula) REFERENCES Alumno(matricula),
-    FOREIGN KEY (id_grupo) REFERENCES Grupo(id_grupo)
+    FOREIGN KEY (id_horario) REFERENCES Horario(id_horario)
 );
+
+DROP TABLE Inscripcion;
+
+ALTER TABLE Horario
+ADD cupo_maximo INT DEFAULT 40,
+ADD cupos_disponibles INT DEFAULT 40;
+
+ALTER TABLE Horario
+ADD periodo_escolar VARCHAR(20) DEFAULT '2026-1';
+
+DESCRIBE Horario;
+
+select * from Inscripcion;
+
+
