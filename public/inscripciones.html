@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Inscripción de Materias</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'azul-uni': '#002B5C',
+                        'oro-uni': '#D59F0F'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+
+<body class="bg-gray-100 min-h-screen p-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <!-- HEADER -->
+
+        <div class="bg-azul-uni text-white rounded-xl p-6 shadow-lg mb-8">
+
+            <div class="flex justify-between items-center">
+
+                <div>
+                    <h1 class="text-3xl font-bold">
+                        Inscripción de Materias
+                    </h1>
+
+                    <p class="text-gray-200 mt-2">
+                        Gestión de carga académica
+                    </p>
+                </div>
+
+                <a href="./catalogos/catalogos.html"
+                class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition">
+
+                    <i class="fa-solid fa-house mr-2"></i>
+                    Inicio
+
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- BUSQUEDA -->
+
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+
+            <div class="flex gap-4">
+
+                <input
+                    type="number"
+                    id="matricula"
+                    placeholder="Ingresa matrícula"
+                    class="flex-1 border rounded-lg px-4 py-3">
+
+                <button
+                    onclick="buscarAlumno()"
+                    class="bg-azul-uni text-white px-6 rounded-lg hover:bg-blue-900">
+
+                    Buscar
+
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- INFORMACION ALUMNO -->
+
+        <div
+            id="cardAlumno"
+            class="hidden bg-white rounded-xl shadow-md p-6 mb-6">
+
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+
+                <div>
+                    <p class="text-gray-500 text-sm">Matrícula</p>
+                    <p id="infoMatricula" class="font-bold"></p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500 text-sm">Alumno</p>
+                    <p id="infoNombre" class="font-bold"></p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500 text-sm">Carrera</p>
+                    <p id="infoCarrera" class="font-bold"></p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500 text-sm">Promedio</p>
+                    <p id="infoPromedio" class="font-bold"></p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500 text-sm">Estado</p>
+                    <p id="infoEstado" class="font-bold"></p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TABLAS -->
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- HORARIOS DISPONIBLES -->
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+
+                <h2 class="text-xl font-bold text-azul-uni mb-4">
+                    Horarios Disponibles
+                </h2>
+
+                    <div class="flex gap-4 mb-4">
+
+        <select id="filtroSemestre" class="border p-2 rounded">
+            <option value="">Todos los semestres</option>
+
+            <option value="1">1°</option>
+            <option value="2">2°</option>
+            <option value="3">3°</option>
+            <option value="4">4°</option>
+            <option value="5">5°</option>
+            <option value="6">6°</option>
+            <option value="7">7°</option>
+            <option value="8">8°</option>
+            <option value="9">9°</option>
+        </select>
+
+        <select id="filtroTurno" class="border p-2 rounded">
+            <option value="">Todos los turnos</option>
+            <option value="M">Matutino</option>
+            <option value="V">Vespertino</option>
+        </select>
+
+    </div>
+
+                <div class="overflow-auto max-h-[600px]">
+
+                    <table class="w-full text-sm">
+
+                        <thead class="bg-gray-100 sticky top-0">
+
+                            <tr>
+
+                                <th class="p-2 text-left">Materia</th>
+                                <th class="p-2 text-left">Grupo</th>
+                                <th class="p-2 text-left">Profesor</th>
+                                <th class="p-2 text-left">Cupos</th>
+                                <th class="p-2 text-center">Acción</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="tablaHorarios"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            <!-- HORARIO SELECCIONADO -->
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+
+                <div class="flex justify-between items-center mb-4">
+
+                    <h2 class="text-xl font-bold text-azul-uni">
+                        Horario Seleccionado
+                    </h2>
+
+                    <span
+                        id="contadorMaterias"
+                        class="bg-oro-uni text-white px-3 py-1 rounded-full text-sm">
+
+                        0 / 7
+
+                    </span>
+
+                </div>
+
+                <div class="overflow-auto max-h-[600px]">
+
+                    <table class="w-full text-sm">
+
+                        <thead class="bg-gray-100 sticky top-0">
+
+                            <tr>
+
+                                <th class="p-2 text-left">Materia</th>
+                                <th class="p-2 text-left">Grupo</th>
+                                <th class="p-2 text-left">Horario</th>
+                                <th class="p-2 text-center">Acción</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="tablaSeleccionadas"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+<script>
+
+let materiasSeleccionadas = [];
+
+// =========================================
+// BUSCAR ALUMNO
+// =========================================
+
+async function buscarAlumno(){
+
+    const matricula =
+    document.getElementById('matricula').value;
+
+    if(!matricula){
+        alert('Ingresa una matrícula');
+        return;
+    }
+
+    try{
+
+        const res = await fetch(
+            `/api/inscripciones/alumno/${matricula}`
+        );
+
+        if(!res.ok){
+            throw new Error('Alumno no encontrado');
+        }
+
+        const alumno = await res.json();
+
+        document.getElementById('cardAlumno')
+        .classList.remove('hidden');
+
+        document.getElementById('infoMatricula')
+        .innerText = alumno.matricula;
+
+        document.getElementById('infoNombre')
+        .innerText =
+            `${alumno.nombre_alumno}
+            ${alumno.ap_paterno}
+            ${alumno.ap_materno}`;
+
+        document.getElementById('infoCarrera')
+        .innerText = alumno.nombre_carrera;
+
+        document.getElementById('infoPromedio')
+        .innerText = Number(alumno.promedio).toFixed(1);
+
+        const activo = alumno.estado == 1;
+        document.getElementById('infoEstado').innerHTML = `
+            <span class="${activo
+                ? 'text-green-600 font-semibold'
+                : 'text-red-600 font-semibold'}">
+                ${activo ? 'Activo' : 'Inactivo'}
+            </span>
+        `;
+        
+
+    }catch(error){
+
+        alert(error.message);
+
+    }
+
+}
+
+// =========================================
+// CARGAR HORARIOS
+// =========================================
+
+document.getElementById('filtroSemestre')
+    .addEventListener('change', cargarHorarios);
+
+document.getElementById('filtroTurno')
+    .addEventListener('change', cargarHorarios);
+
+
+//Obtener Horarios
+async function cargarHorarios(){
+
+    try{
+
+        const res = await fetch('/api/inscripciones/horarios');
+
+        const horarios = await res.json();
+
+        // Obtener filtros
+        const semestre =
+            document.getElementById('filtroSemestre').value;
+
+        const turno =
+            document.getElementById('filtroTurno').value;
+
+        // Filtrar
+        const horariosFiltrados = horarios.filter(h => {
+
+            // Ejemplo: "3M"
+            const valor = h.semestre_turno;
+
+            const semestreHorario = valor.slice(0, -1);
+            const turnoHorario = valor.slice(-1);
+
+            const coincideSemestre =
+                semestre === '' || semestreHorario === semestre;
+
+            const coincideTurno =
+                turno === '' || turnoHorario === turno;
+
+            return coincideSemestre && coincideTurno;
+
+        });
+
+        const tbody =
+            document.getElementById('tablaHorarios');
+
+        tbody.innerHTML = '';
+
+        horariosFiltrados.forEach(h => {
+
+            tbody.innerHTML += `
+
+                <tr class="border-b">
+
+                    <td class="p-2">
+                        ${h.nombre_materia}
+                    </td>
+
+                    <td class="p-2">
+                        ${h.grupo}
+                    </td>
+
+                    <td class="p-2">
+                        ${h.nombre_profesor}
+                        ${h.ap_paterno_profesor}
+                    </td>
+
+                    <td class="p-2">
+                        ${h.cupos_disponibles}
+                    </td>
+
+                    <td class="p-2 text-center">
+
+                        <button
+                            onclick='agregarMateria(${JSON.stringify(h)})'
+                            class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">
+
+                            Agregar
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        });
+
+    }catch(error){
+
+        console.error(error);
+
+    }
+
+}
+// =========================================
+// AGREGAR MATERIA
+// =========================================
+
+function agregarMateria(horario){
+
+    if(materiasSeleccionadas.length >= 7){
+
+        alert('Máximo 7 materias');
+
+        return;
+    }
+
+    const existe =
+    materiasSeleccionadas.some(
+        m => m.id_horario === horario.id_horario
+    );
+
+    if(existe){
+
+        alert('Materia ya agregada');
+
+        return;
+    }
+
+    materiasSeleccionadas.push(horario);
+
+    renderSeleccionadas();
+
+}
+
+// =========================================
+// RENDER TABLA DERECHA
+// =========================================
+
+function renderSeleccionadas(){
+
+    const tbody =
+    document.getElementById('tablaSeleccionadas');
+
+    tbody.innerHTML = '';
+
+    materiasSeleccionadas.forEach(h => {
+
+        const horarioTexto = [
+
+            h.lunes ? `Lun ${h.lunes}` : '',
+            h.martes ? `Mar ${h.martes}` : '',
+            h.miercoles ? `Mie ${h.miercoles}` : '',
+            h.jueves ? `Jue ${h.jueves}` : '',
+            h.viernes ? `Vie ${h.viernes}` : '',
+            h.sabado ? `Sab ${h.sabado}` : ''
+
+        ]
+        .filter(Boolean)
+        .join(' | ');
+
+        tbody.innerHTML += `
+
+            <tr class="border-b">
+
+                <td class="p-2">
+                    ${h.nombre_materia}
+                </td>
+
+                <td class="p-2">
+                    ${h.grupo}
+                </td>
+
+                <td class="p-2 text-xs">
+                    ${horarioTexto}
+                </td>
+
+                <td class="p-2 text-center">
+
+                    <button
+                        onclick="eliminarMateria(${h.id_horario})"
+                        class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
+
+                        X
+
+                    </button>
+
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+    document.getElementById('contadorMaterias')
+    .innerText =
+    `${materiasSeleccionadas.length} / 7`;
+
+}
+
+// =========================================
+// ELIMINAR
+// =========================================
+
+function eliminarMateria(id){
+
+    materiasSeleccionadas =
+    materiasSeleccionadas.filter(
+        m => m.id_horario !== id
+    );
+
+    renderSeleccionadas();
+
+}
+
+window.addEventListener(
+    'DOMContentLoaded',
+    cargarHorarios
+);
+
+</script>
+
+</body>
+</html>

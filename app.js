@@ -37,6 +37,9 @@ app.use('/api/grupos', gruposRoutes);
 const horariosRoutes = require('./routes/horarios_routes');
 app.use('/api/horarios', horariosRoutes);
 
+const inscripcionesRoutes = require('./routes/inscripciones_routes');
+app.use('/api/inscripciones', inscripcionesRoutes);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
